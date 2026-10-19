@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Next Tiny Step</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FBF7F0">
+<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tiny Step">
+<link rel="apple-touch-icon" id="touchIcon" href="">
+<style>
+:root{
+  --bg:#FBF7F0; --card:#FFFFFF; --ink:#2B2A33; --muted:#6F6C78; --line:#E7E0D4;
+  --accent:#F2603C; --accent-ink:#FFFFFF; --good:#2E9E7E; --soft:#FFF0EA;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#17161C; --card:#211F28; --ink:#F2EFE9; --muted:#A5A1B0; --line:#34313D; --accent:#FF7A57; --accent-ink:#1A0B06; --good:#4CC2A0; --soft:#2C211F; }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);
+  font-family:ui-rounded,"SF Pro Rounded",-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+body{padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.app{max-width:520px;margin:0 auto;padding:20px 20px 60px;min-height:100vh}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.brand{font-weight:800;font-size:18px;letter-spacing:.2px}
+.brand i{color:var(--accent);font-style:normal}
+.iconbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:8px 12px;font:inherit;font-size:15px;cursor:pointer}
+.stats{color:var(--muted);font-size:14px;margin:0 0 22px}
+.stats b{color:var(--ink)}
+h1{font-family:ui-serif,"New York",Georgia,serif;font-size:32px;line-height:1.15;margin:8px 0 10px;font-weight:700}
+p.lead{color:var(--muted);font-size:17px;line-height:1.45;margin:0 0 20px}
+label.l{display:block;font-weight:700;font-size:15px;margin:18px 0 8px}
+textarea,input[type=text],input[type=password]{width:100%;font:inherit;font-size:17px;color:var(--ink);background:var(--card);
+  border:1.5px solid var(--line);border-radius:16px;padding:14px 16px}
+textarea{min-height:92px;resize:vertical}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:9px 14px;font:inherit;font-size:15px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--soft);border-color:var(--accent);font-weight:700}
+.btn{display:block;width:100%;border:0;border-radius:18px;padding:17px 20px;font:inherit;font-size:18px;font-weight:800;cursor:pointer;margin-top:12px}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.good{background:var(--good);color:#04241B}
+.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink);font-weight:700}
+.btn:disabled{opacity:.55}
+.screen{display:none}.screen.on{display:block}
+
+/* Step card */
+.crumbs{display:flex;gap:6px;margin:0 0 18px;flex-wrap:wrap}
+.crumbs span{width:10px;height:10px;border-radius:50%;background:var(--good)}
+.crumbs span.now{background:var(--accent);box-shadow:0 0 0 4px var(--soft)}
+.taskline{color:var(--muted);font-size:15px;margin:0 0 6px}
+.stepcard{background:var(--card);border:1.5px solid var(--line);border-radius:26px;padding:26px 22px;margin:6px 0 4px}
+.stepcard .kick{font-size:13px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent);margin:0 0 10px}
+.stepcard .txt{font-family:ui-serif,"New York",Georgia,serif;font-size:29px;line-height:1.22;margin:0 0 12px;font-weight:700}
+.stepcard .why{color:var(--muted);font-size:16px;line-height:1.45;margin:0}
+.timer{display:flex;align-items:center;gap:16px;margin:16px 0 4px}
+.ring{position:relative;width:84px;height:84px;flex:none}
+.ring svg{transform:rotate(-90deg)}
+.ring .t{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;font-variant-numeric:tabular-nums}
+.timer .btn{margin:0}
+.msg{min-height:22px;color:var(--muted);font-size:15px;margin:12px 2px 0;line-height:1.4}
+.msg.err{color:#C2412A}
+.praise{color:var(--good);font-weight:800;font-size:17px;margin:0 0 10px;min-height:24px}
+.loader{padding:60px 10px;text-align:center;color:var(--muted);font-size:17px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin:0 3px;animation:b 1s infinite ease-in-out}
+.dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,80%,100%{transform:scale(.6);opacity:.5}40%{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){.dot{animation:none}}
+
+/* Settings sheet */
+#sheet{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:20}
+#sheet.on{display:flex}
+#sheet .in{background:var(--bg);width:100%;max-width:520px;border-radius:26px 26px 0 0;padding:22px 20px calc(24px + env(safe-area-inset-bottom,0px));max-height:90vh;overflow:auto}
+#sheet h2{margin:0 0 6px;font-size:22px}
+#sheet p{color:var(--muted);font-size:15px;line-height:1.5;margin:6px 0 10px}
+#sheet a{color:var(--accent)}
+.done-big{font-family:ui-serif,Georgia,serif;font-size:56px;margin:20px 0 0}
+</style>
+</head>
+<body>
+<main class="app">
+  <header>
+    <div class="brand">Next <i>Tiny</i> Step</div>
+    <button class="iconbtn" id="openSet" aria-label="Settings">Settings</button>
+  </header>
+  <p class="stats" id="stats"></p>
+
+  <!-- HOME -->
+  <section class="screen on" id="s-home">
+    <h1>What are you putting off?</h1>
+    <p class="lead">Tell me the thing. I'll give you a first step so small it takes under two minutes.</p>
+    <label class="l" for="task">The thing I'm avoiding</label>
+    <textarea id="task" placeholder="e.g. Write my thesis introduction" maxlength="300"></textarea>
+    <label class="l" id="feelLbl">Right now I feel… <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+    <div class="chips" role="group" aria-labelledby="feelLbl" id="feel">
+      <button class="chip" aria-pressed="false" data-v="tired">Tired</button>
+      <button class="chip" aria-pressed="false" data-v="anxious">Anxious</button>
+      <button class="chip" aria-pressed="false" data-v="bored">Bored</button>
+      <button class="chip" aria-pressed="false" data-v="overwhelmed">Overwhelmed</button>
+      <button class="chip" aria-pressed="false" data-v="low on time">Low on time</button>
+    </div>
+    <button class="btn primary" id="go">Give me the first step</button>
+    <p class="msg" id="homeMsg" role="status" aria-live="polite"></p>
+  </section>
+
+  <!-- LOADING -->
+  <section class="screen" id="s-load">
+    <div class="loader" role="status" aria-live="polite"><span class="dot"></span><span class="dot"></span><span class="dot"></span><br><br><span id="loadTxt">Finding your next tiny step…</span></div>
+  </section>
+
+  <!-- STEP -->
+  <section class="screen" id="s-step">
+    <div class="crumbs" id="crumbs" aria-hidden="true"></div>
+    <p class="taskline" id="taskLine"></p>
+    <p class="praise" id="praise" role="status" aria-live="polite"></p>
+    <div class="stepcard" aria-live="polite">
+      <p class="kick" id="kick">Your tiny step</p>
+      <p class="txt" id="stepTxt"></p>
+      <p class="why" id="stepWhy"></p>
+    </div>
+    <div class="timer">
+      <div class="ring">
+        <svg width="84" height="84" viewBox="0 0 120 120" aria-hidden="true">
+          <circle cx="60" cy="60" r="54" fill="none" stroke="var(--line)" stroke-width="10"/>
+          <circle id="arc" cx="60" cy="60" r="54" fill="none" stroke="var(--accent)" stroke-width="10" stroke-linecap="round" stroke-dasharray="339.3" stroke-dashoffset="0"/>
+        </svg>
+        <div class="t" id="clock">2:00</div>
+      </div>
+      <button class="btn ghost" id="timerBtn">Start 2-minute timer</button>
+    </div>
+    <button class="btn good" id="didIt">I did it</button>
+    <button class="btn ghost" id="smaller">Still too big, make it smaller</button>
+    <button class="btn ghost" id="finish">I'm finished with the whole task</button>
+    <p class="msg" id="stepMsg" role="status" aria-live="polite"></p>
+  </section>
+
+  <!-- FINISHED -->
+  <section class="screen" id="s-fin">
+    <div class="done-big" aria-hidden="true">✓</div>
+    <h1 id="finTitle">You did it.</h1>
+    <p class="lead" id="finTxt"></p>
+    <button class="btn primary" id="again">Start something else</button>
+  </section>
+</main>
+
+<div id="sheet" role="dialog" aria-modal="true" aria-label="Settings">
+  <div class="in">
+    <h2>Settings</h2>
+    <p>The app works without a key using built-in steps. Add a free Gemini key for steps written specifically for your task.</p>
+    <p>Get a key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>, then paste it here. It is saved only on this phone and sent only to Google.</p>
+    <label class="l" for="key">Gemini API key</label>
+    <input type="password" id="key" placeholder="Paste key" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <label class="l" for="model">Model (leave blank for automatic)</label>
+    <input type="text" id="model" placeholder="e.g. gemini-flash-latest" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <button class="btn primary" id="saveSet">Save</button>
+    <button class="btn ghost" id="closeSet">Close</button>
+    <p class="msg" id="setMsg" role="status" aria-live="polite"></p>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+const $ = s => document.querySelector(s);
+const store = {
+  get(k,d){ try{ const v=localStorage.getItem('nts:'+k); return v?JSON.parse(v):d; }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem('nts:'+k, JSON.stringify(v)); }catch(e){} }
+};
+
+/* ---------- state ---------- */
+let cfg = Object.assign({key:'', model:''}, store.get('cfg',{}));
+let days = store.get('days', {});               // {"2026-10-19": 4}
+let S = {task:'', feeling:'', steps:[], cur:null, fallbackN:0, smallN:0};
+
+const todayKey = () => { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+function streak(){
+  let n=0; const d=new Date();
+  if(!days[todayKey()]) d.setDate(d.getDate()-1);
+  for(;;){
+    const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    if(days[k]){ n++; d.setDate(d.getDate()-1); } else break;
+  }
+  return n;
+}
+function renderStats(){
+  const t=days[todayKey()]||0, s=streak();
+  $('#stats').innerHTML = '<b>'+t+'</b> tiny step'+(t===1?'':'s')+' today' + (s>1 ? ' · <b>'+s+'</b> day streak' : '');
+}
+function bump(){ const k=todayKey(); days[k]=(days[k]||0)+1; store.set('days',days); renderStats(); }
+
+/* ---------- screens ---------- */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  $('#'+id).classList.add('on'); window.scrollTo(0,0);
+}
+
+/* ---------- fallback steps (no key needed) ---------- */
+function fallbackStep(kind){
+  const t = S.task.length>60 ? S.task.slice(0,57)+'…' : S.task;
+  if(kind==='smaller'){
+    const small = [
+      ['Just look at it for 30 seconds. That is the whole step.','Looking counts. Your brain only has to get used to it.'],
+      ['Say out loud, in one sentence, what the very first move would be.','Saying it makes it real and less scary.'],
+      ['Stand up, take one slow breath, and sit back down facing it.','A reset is a real step, and it costs nothing.']
+    ];
+    return {step:small[S.smallN++ % small.length][0], why:small[(S.smallN-1) % small.length][1]};
+  }
+  const ladder = [
+    ['Sit where you will do it and put everything you need for “'+t+'” within reach.','Setting the scene removes the first bit of friction.'],
+    ['Open or set out the first thing you need. Do not start yet, only open it.','Opening is easier than starting, and it gets you halfway.'],
+    ['Set a 2-minute timer and do the ugliest possible first piece of it.','Messy is the goal. You can fix it later.'],
+    ['Write down the single next thing that needs doing.','One clear next action beats a vague big goal.'],
+    ['Do that one thing for 2 minutes, then you are allowed to stop.','You can stop after two minutes, and you probably will not want to.']
+  ];
+  const i = Math.min(S.fallbackN++, ladder.length-1);
+  if(S.fallbackN>ladder.length) return {step:'Do the next small piece for 2 minutes. Stop when the timer ends if you want.', why:'Small, steady pieces add up.'};
+  return {step:ladder[i][0], why:ladder[i][1]};
+}
+
+/* ---------- Gemini ---------- */
+const MODELS = ['gemini-flash-latest','gemini-2.5-flash','gemini-3.5-flash'];
+const SYSTEM = "You are a gentle coach for people who procrastinate or get stuck starting tasks. "
+ + "Give exactly ONE next step. It must be physical and concrete, doable in under 2 minutes, and so small it feels almost silly. "
+ + "Never give a list. Do not repeat a step already done. If the person says a step was too big, make it dramatically smaller. "
+ + "Tone: warm, calm, never preachy. Match the step size to how they feel (tired, anxious, overwhelmed, or low on time means even smaller). "
+ + 'Reply ONLY with JSON: {"step":"one short imperative sentence","why":"one short, kind sentence on why this helps"}';
+
+async function askGemini(kind, rejected){
+  const done = S.steps.map(s=>s.text);
+  const prompt =
+    'Task they are avoiding: '+S.task+'\n'+
+    'How they feel: '+(S.feeling||'not said')+'\n'+
+    'Steps already completed: '+(done.length?done.map((d,i)=>(i+1)+'. '+d).join(' | '):'none yet')+'\n'+
+    (kind==='smaller' ? 'The last step was too big: "'+rejected+'". Give a much smaller one.\n' :
+     kind==='next' ? 'They just finished a step. Give the next tiny step.\n' : 'Give the very first tiny step.\n');
+  const list = cfg.model ? [cfg.model] : MODELS;
+  let lastErr;
+  for(const m of list){
+    try{
+      const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(m)+':generateContent?key='+encodeURIComponent(cfg.key),{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          systemInstruction:{parts:[{text:SYSTEM}]},
+          contents:[{role:'user',parts:[{text:prompt}]}],
+          generationConfig:{responseMimeType:'application/json', temperature:0.8}
+        })
+      });
+      if(r.status===404){ lastErr=new Error('model'); continue; }
+      if(r.status===400 || r.status===403){ const e=new Error('key'); e.code='key'; throw e; }
+      if(r.status===429){ const e=new Error('limit'); e.code='limit'; throw e; }
+      if(!r.ok) throw new Error('http '+r.status);
+      const j = await r.json();
+      let txt = (j.candidates&&j.candidates[0]&&j.candidates[0].content.parts.map(p=>p.text||'').join(''))||'';
+      txt = txt.replace(/```json|```/g,'').trim();
+      const o = JSON.parse(txt);
+      if(!o.step) throw new Error('empty');
+      return {step:String(o.step).trim(), why:String(o.why||'').trim()};
+    }catch(e){
+      if(e.code) throw e;
+      lastErr=e;
+    }
+  }
+  throw lastErr || new Error('failed');
+}
+
+async function getStep(kind, rejected){
+  $('#loadTxt').textContent = kind==='smaller' ? 'Making it smaller…' : 'Finding your next tiny step…';
+  show('s-load');
+  let res, note='';
+  if(cfg.key){
+    try{ res = await askGemini(kind, rejected); }
+    catch(e){
+      note = e.code==='key' ? 'Your AI key was not accepted, so I used a built-in step. Check Settings.' :
+             e.code==='limit' ? 'The free AI limit was reached for now, so I used a built-in step.' :
+             'Could not reach the AI, so I used a built-in step.';
+    }
+  }
+  if(!res) res = fallbackStep(kind==='smaller'?'smaller':'next');
+  S.cur = res; renderStep(note);
+}
+
+/* ---------- step screen ---------- */
+const PRAISE = ['Nice. That counts.','Done. You moved.','That was real progress.','Look at you go.','Small steps add up.','Good. Momentum is on.'];
+let timer=null, left=120;
+
+function renderStep(note, praise){
+  stopTimer();
+  $('#taskLine').textContent = 'For: '+S.task;
+  $('#praise').textContent = praise || '';
+  $('#kick').textContent = S.steps.length ? 'Next tiny step' : 'Your first tiny step';
+  $('#stepTxt').textContent = S.cur.step;
+  $('#stepWhy').textContent = S.cur.why;
+  const c=$('#crumbs'); c.innerHTML='';
+  S.steps.forEach(()=>c.appendChild(document.createElement('span')));
+  const now=document.createElement('span'); now.className='now'; c.appendChild(now);
+  $('#stepMsg').textContent = note||''; $('#stepMsg').className='msg'+(note?' err':'');
+  show('s-step');
+}
+function paint(){
+  const m=Math.floor(left/60), s=String(left%60).padStart(2,'0');
+  $('#clock').textContent = m+':'+s;
+  $('#arc').style.strokeDashoffset = String(339.3*(1-left/120));
+}
+function stopTimer(){ clearInterval(timer); timer=null; left=120; paint(); $('#timerBtn').textContent='Start 2-minute timer'; }
+function chime(){
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext; const c=new AC(); const t=c.currentTime;
+    [660,880].forEach((f,i)=>{ const o=c.createOscillator(), g=c.createGain(); o.frequency.value=f; o.type='sine';
+      g.gain.setValueAtTime(0.0001,t+i*.25); g.gain.exponentialRampToValueAtTime(0.3,t+i*.25+.02); g.gain.exponentialRampToValueAtTime(0.0001,t+i*.25+.4);
+      o.connect(g); g.connect(c.destination); o.start(t+i*.25); o.stop(t+i*.25+.45); });
+  }catch(e){}
+}
+$('#timerBtn').addEventListener('click', ()=>{
+  if(timer){ stopTimer(); return; }
+  left=120; paint(); $('#timerBtn').textContent='Stop timer';
+  timer=setInterval(()=>{
+    left--; paint();
+    if(left<=0){ clearInterval(timer); timer=null; chime(); $('#timerBtn').textContent='Start again'; left=120;
+      $('#stepMsg').className='msg'; $('#stepMsg').textContent='Two minutes are up. Keep going if you feel like it, or tap “I did it.”'; }
+  },1000);
+});
+
+/* ---------- actions ---------- */
+$('#go').addEventListener('click', ()=>{
+  const t=$('#task').value.trim();
+  if(!t){ $('#homeMsg').className='msg err'; $('#homeMsg').textContent='Type the task first, even roughly.'; return; }
+  $('#homeMsg').textContent='';
+  S = {task:t, feeling:[...document.querySelectorAll('#feel .chip[aria-pressed="true"]')].map(c=>c.dataset.v).join(', '), steps:[], cur:null, fallbackN:0, smallN:0};
+  getStep('first');
+});
+document.querySelectorAll('#feel .chip').forEach(c=>c.addEventListener('click',()=>c.setAttribute('aria-pressed', c.getAttribute('aria-pressed')!=='true')));
+
+$('#didIt').addEventListener('click', async ()=>{
+  S.steps.push({text:S.cur.step}); bump();
+  const p = PRAISE[Math.floor(Math.random()*PRAISE.length)];
+  await getStep('next');
+  $('#praise').textContent = p;
+});
+$('#smaller').addEventListener('click', ()=>{ getStep('smaller', S.cur.step); });
+$('#finish').addEventListener('click', ()=>{
+  stopTimer();
+  const n=S.steps.length;
+  $('#finTitle').textContent = n ? 'You did it.' : 'No pressure.';
+  $('#finTxt').textContent = n ? 'You finished '+n+' tiny step'+(n===1?'':'s')+' on “'+S.task+'”. Starting was the hard part, and you did it.' : 'Come back whenever you are ready. The first step will still be tiny.';
+  show('s-fin');
+});
+$('#again').addEventListener('click', ()=>{ $('#task').value=''; document.querySelectorAll('#feel .chip').forEach(c=>c.setAttribute('aria-pressed','false')); show('s-home'); });
+
+/* ---------- settings ---------- */
+$('#openSet').addEventListener('click', ()=>{ $('#key').value=cfg.key; $('#model').value=cfg.model; $('#setMsg').textContent=''; $('#sheet').classList.add('on'); });
+$('#closeSet').addEventListener('click', ()=>$('#sheet').classList.remove('on'));
+$('#sheet').addEventListener('click', e=>{ if(e.target.id==='sheet') $('#sheet').classList.remove('on'); });
+$('#saveSet').addEventListener('click', ()=>{
+  cfg.key=$('#key').value.trim(); cfg.model=$('#model').value.trim(); store.set('cfg',cfg);
+  $('#setMsg').className='msg'; $('#setMsg').textContent = cfg.key ? 'Saved. AI steps are on.' : 'Saved. Using built-in steps.';
+});
+
+/* ---------- icon ---------- */
+(function(){
+  try{
+    const c=document.createElement('canvas'); c.width=c.height=180; const g=c.getContext('2d');
+    g.fillStyle='#FBF7F0'; g.fillRect(0,0,180,180);
+    g.fillStyle='#F2603C';
+    [[40,120,26],[78,96,26],[116,72,26]].forEach(([x,y,s])=>{ g.beginPath(); g.roundRect ? g.roundRect(x,y,s*1.4,s,8) : g.rect(x,y,s*1.4,s); g.fill(); });
+    $('#touchIcon').href=c.toDataURL('image/png');
+  }catch(e){}
+})();
+
+renderStats(); paint();
+})();
+</script>
+</body>
+</html>
